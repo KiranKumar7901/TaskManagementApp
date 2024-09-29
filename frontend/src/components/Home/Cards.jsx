@@ -1,32 +1,50 @@
 import React from "react";
 import { CiHeart } from "react-icons/ci";
+import { FaHeart } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircle } from "react-icons/io";
+import axios from "axios";
 
-const Cards = ({home}) => {
-  const data = [
-    {
-      title: "Best Coding Channel",
-      desc: "I have to create my channel the best ever coding channel in hindi for those who do not understand english",
-      status: "Incomplete",
-    },
-    {
-      title: "Best Coding Channel",
-      desc: "I have to create my channel",
-      status: "Complete",
-    },
-    {
-      title: "Best Coding Channel",
-      desc: "I have to create my channel the best ever coding channel in hindi for those who do not understand english",
-      status: "Incomplete",
-    },
-    {
-      title: "Best Coding Channel",
-      desc: "I have to create my channel the best ever coding channel in hindi for those who do not understand english",
-      status: "Incomplete",
-    },
-  ];
+const Cards = ({ home, setInputDiv, data }) => {
+  const headers = {
+    id: localStorage.getItem("id"),
+    authorization: `Bearer ${localStorage.getItem("token")}`,
+  };
+  const handleCompleteTask = async (id) => {
+    try {
+      await axios.put(
+        `http://localhost:1000/api/v2/update-comp-task/${id}`,
+        {},
+        { headers }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleImpTask = async (id) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:1000/api/v2//update-imp-task/${id}`,
+        {},
+        { headers }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handledeleteTask = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:1000/api/v2/delete-task/${id}`,
+        { headers }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="grid grid-cols-3 gap-4 p-4">
       {data &&
@@ -39,30 +57,34 @@ const Cards = ({home}) => {
             <div className="mt-4 w-full flex items-center">
               <button
                 className={`${
-                  items.status === "Incomplete" ? "bg-red-400" : "bg-green-400"
+                  items.complete === false ? "bg-red-400" : "bg-green-400"
                 } text-black px-2 py-1 rounded w-3/6`}
+                onClick={() => handleCompleteTask(items._id)}
               >
-                {items.status}
+                {items.complete === true ? "Completed" : "Incomplete"}
               </button>
               <div className="p-2 w-3/6 text-2xl flex justify-around">
-                <button>
-                  <CiHeart />
+                <button onClick={() => handleImpTask(items._id)}>
+                  {items.important === false ? <CiHeart /> : <FaHeart className="text-red-500"/>}
                 </button>
                 <button>
                   <FaEdit />
                 </button>
-                <button>
+                <button onClick={()=>handledeleteTask(items._id)}>
                   <MdDelete />
                 </button>
               </div>
             </div>
           </div>
         ))}
-      { home === 'true' && (
-        <div className="flex flex-col justify-center items-center bg-gray-800 rounded-sm p-4 text-gray-300 hover:scale-105 hover:cursor-pointer transition-all-duration-300">
+      {home === "true" && (
+        <button
+          onClick={() => setInputDiv("fixed")}
+          className="flex flex-col justify-center items-center bg-gray-800 rounded-sm p-4 text-gray-300 hover:scale-105 hover:cursor-pointer transition-all-duration-300"
+        >
           <IoIosAddCircle className="text-5xl" />
           <h2 className="text-2xl mt-4">Add Task</h2>
-        </div>
+        </button>
       )}
     </div>
   );

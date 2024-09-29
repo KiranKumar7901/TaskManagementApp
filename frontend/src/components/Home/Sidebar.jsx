@@ -1,47 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
 import { CgNotes } from "react-icons/cg";
 import { MdLabelImportant } from "react-icons/md";
 import { FaCheckDouble } from "react-icons/fa";
 import { TbNotebookOff } from "react-icons/tb";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authActions } from "../../store/auth";
+import { useEffect } from "react";
+import axios from "axios";
 
 const Sidebar = () => {
+  const dispatch = useDispatch();
+  const history = useNavigate();
+  const logout = () => {
+    dispatch(authActions.logout());
+    localStorage.clear("id");
+    localStorage.clear("token");
+    history("/signup");
+  };
+  const [Data, setData] = useState();
+  const headers = {
+    id: localStorage.getItem("id"),
+    authorization: `Bearer ${localStorage.getItem("token")}`,
+  };
+  useEffect(() => {
+    const fetch = async () => {
+      const res = await axios.get("http://localhost:1000/api/v2/get-all-tasks", {
+        headers,
+      });
+      setData(res.data.data);
+    };
+    fetch();
+    // eslint-disable-next-line
+  }, []);
   const data = [
     {
       title: "All Tasks",
       icon: <CgNotes />,
-      link: "/"
+      link: "/",
     },
     {
       title: "Important Tasks",
       icon: <MdLabelImportant />,
-      link: "/importantTasks"
+      link: "/importantTasks",
     },
     {
       title: "Completed Tasks",
       icon: <FaCheckDouble />,
-      link: "/completedTasks"
+      link: "/completedTasks",
     },
     {
       title: "Incomplete Tasks",
       icon: <TbNotebookOff />,
-      link: "/incompleteTasks"
+      link: "/incompleteTasks",
     },
   ];
   return (
     <>
-      <div>
-        <h2 className="text-xl font-semibold">Task Manager</h2>
-        <h4 className="mb-1 text-gray-400">abc@gmail.com</h4>
+      {Data && (
+        <div>
+        <h2 className="text-xl font-semibold">{Data.username}</h2>
+        <h4 className="mb-1 text-gray-400">{Data.email}</h4>
         <hr />
       </div>
+      )}
       <div>
         {data.map((items, i) => (
-          <Link to={items.link} key={i} className="my-2 flex items-center gap-2 hover:bg-gray-600 p-2 rounded transition:all duration-300">{items.icon}{items.title}</Link>
+          <Link
+            to={items.link}
+            key={i}
+            className="my-2 flex items-center gap-2 hover:bg-gray-600 p-2 rounded transition:all duration-300"
+          >
+            {items.icon}
+            {items.title}
+          </Link>
         ))}
       </div>
       <div>
-        <button className="bg-gray-600 w-full p-2 rounded">Log Out</button>
+        <button className="bg-gray-600 w-full p-2 rounded" onClick={logout}>
+          Log Out
+        </button>
       </div>
     </>
   );
